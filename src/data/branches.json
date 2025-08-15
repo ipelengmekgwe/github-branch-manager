@@ -1,0 +1,109 @@
+{
+  "repository": "awesome-project",
+  "branches": [
+    {
+      "id": "1",
+      "name": "feature/user-authentication",
+      "author": "John Doe",
+      "authorEmail": "john.doe@example.com",
+      "lastCommit": "2024-08-14T10:30:00Z",
+      "commitMessage": "Add JWT authentication middleware",
+      "buildUrl": "https://build.example.com/feature-user-authentication",
+      "status": "success",
+      "protected": false,
+      "ahead": 5,
+      "behind": 2
+    },
+    {
+      "id": "2",
+      "name": "feature/payment-gateway",
+      "author": "Jane Smith",
+      "authorEmail": "jane.smith@example.com",
+      "lastCommit": "2024-08-13T15:45:00Z",
+      "commitMessage": "Integrate Stripe payment processing",
+      "buildUrl": "https://build.example.com/feature-payment-gateway",
+      "status": "building",
+      "protected": false,
+      "ahead": 12,
+      "behind": 0
+    },
+    {
+      "id": "3",
+      "name": "bugfix/cart-calculation",
+      "author": "Bob Wilson",
+      "authorEmail": "bob.wilson@example.com",
+      "lastCommit": "2024-08-12T09:20:00Z",
+      "commitMessage": "Fix cart total calculation issue",
+      "buildUrl": "https://build.example.com/bugfix-cart-calculation",
+      "status": "failed",
+      "protected": false,
+      "ahead": 2,
+      "behind": 8
+    },
+    {
+      "id": "4",
+      "name": "main",
+      "author": "Alice Johnson",
+      "authorEmail": "alice.johnson@example.com",
+      "lastCommit": "2024-08-15T08:00:00Z",
+      "commitMessage": "Merge PR #234: Update dependencies",
+      "buildUrl": "https://build.example.com/main",
+      "status": "success",
+      "protected": true,
+      "ahead": 0,
+      "behind": 0
+    },
+    {
+      "id": "5",
+      "name": "develop",
+      "author": "Charlie Brown",
+      "authorEmail": "charlie.brown@example.com",
+      "lastCommit": "2024-08-14T16:30:00Z",
+      "commitMessage": "Prepare for v2.1.0 release",
+      "buildUrl": "https://build.example.com/develop",
+      "status": "success",
+      "protected": true,
+      "ahead": 23,
+      "behind": 0
+    },
+    {
+      "id": "6",
+      "name": "feature/dark-mode",
+      "author": "Diana Prince",
+      "authorEmail": "diana.prince@example.com",
+      "lastCommit": "2024-08-10T14:00:00Z",
+      "commitMessage": "Implement dark mode toggle",
+      "buildUrl": "https://build.example.com/feature-dark-mode",
+      "status": "success",
+      "protected": false,
+      "ahead": 7,
+      "behind": 15
+    },
+    {
+      "id": "7",
+      "name": "hotfix/security-patch",
+      "author": "John Doe",
+      "authorEmail": "john.doe@example.com",
+      "lastCommit": "2024-08-15T11:45:00Z",
+      "commitMessage": "Apply critical security patch",
+      "buildUrl": "https://build.example.com/hotfix-security-patch",
+      "status": "success",
+      "protected": false,
+      "ahead": 1,
+      "behind": 0
+    },
+    {
+      "id": "8",
+      "name": "feature/mobile-responsive",
+      "author": "Jane Smith",
+      "authorEmail": "jane.smith@example.com",
+      "lastCommit": "2024-08-08T10:15:00Z",
+      "commitMessage": "Add responsive design for mobile devices",
+      "buildUrl": "https://build.example.com/feature-mobile-responsive",
+      "status": "success",
+      "protected": false,
+      "ahead": 18,
+      "behind": 32
+    }
+  ]
+}
