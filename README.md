@@ -134,4 +134,6 @@ This project is open source and available under the [MIT License](LICENSE).
 
 Made with ❤️ and lots of ☕
 
+🚀 **Live Demo**: [View the deployed app](https://gray-pebble-04bccd803.azurestaticapps.net)
+
 </div>
