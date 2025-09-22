@@ -50,7 +50,7 @@ export default function Dashboard() {
   const [dateTo, setDateTo] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showProtectedOnly, setShowProtectedOnly] = useState(false);
-  const [branches, setBranches] = useState<Branch[]>(branchesData.branches || []);
+  const [branches, setBranches] = useState<Branch[]>(branchesData.branches as Branch[] || []);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [authorSearchTerm, setAuthorSearchTerm] = useState('');
   const [isAuthorDropdownOpen, setIsAuthorDropdownOpen] = useState(false);
@@ -410,10 +410,9 @@ export default function Dashboard() {
                           {branch.name}
                         </h3>
                         {branch.protected && (
-                          <Shield
-                            className="h-4 w-4 text-yellow-500 ml-2"
-                            title="Protected branch"
-                          />
+                          <span title="Protected branch">
+                            <Shield className="h-4 w-4 text-yellow-500 ml-2" />
+                          </span>
                         )}
                         <span
                           className={`ml-3 px-2 py-1 text-xs rounded-full ${getStatusBadgeClass(
