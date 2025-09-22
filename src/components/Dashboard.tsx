@@ -21,6 +21,7 @@ import {
   X,
   ChevronDown,
   FilterX,
+  ArrowUpDown,
 } from 'lucide-react';
 
 interface Branch {
@@ -43,6 +44,9 @@ interface Notification {
   type: 'success' | 'info' | 'warning' | 'error';
 }
 
+type SortField = 'name' | 'author' | 'lastCommit' | 'status';
+type SortDirection = 'asc' | 'desc';
+
 export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [authorFilter, setAuthorFilter] = useState('');
@@ -54,6 +58,8 @@ export default function Dashboard() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [authorSearchTerm, setAuthorSearchTerm] = useState('');
   const [isAuthorDropdownOpen, setIsAuthorDropdownOpen] = useState(false);
+  const [sortField, setSortField] = useState<SortField>('lastCommit');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   const addNotification = (message: string, type: Notification['type'] = 'info') => {
     const id = Date.now().toString();
@@ -91,6 +97,15 @@ export default function Dashboard() {
     setAuthorSearchTerm('');
   };
 
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
   // Close author dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -117,9 +132,9 @@ export default function Dashboard() {
     );
   }, [uniqueAuthors, authorSearchTerm]);
 
-  // Filter branches based on all criteria
+  // Filter and sort branches based on all criteria
   const filteredBranches = useMemo(() => {
-    return branches.filter((branch) => {
+    const filtered = branches.filter((branch) => {
       // Search filter
       const matchesSearch =
         branch.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -151,6 +166,31 @@ export default function Dashboard() {
         matchesProtected
       );
     });
+
+    // Sort the filtered results
+    return filtered.sort((a, b) => {
+      let compareValue = 0;
+
+      switch (sortField) {
+        case 'name':
+          compareValue = a.name.localeCompare(b.name);
+          break;
+        case 'author':
+          compareValue = a.author.localeCompare(b.author);
+          break;
+        case 'lastCommit':
+          compareValue = new Date(a.lastCommit).getTime() - new Date(b.lastCommit).getTime();
+          break;
+        case 'status':
+          const statusOrder = { 'failed': 0, 'building': 1, 'success': 2 };
+          compareValue = statusOrder[a.status] - statusOrder[b.status];
+          break;
+        default:
+          compareValue = 0;
+      }
+
+      return sortDirection === 'asc' ? compareValue : -compareValue;
+    });
   }, [
     searchTerm,
     authorFilter,
@@ -159,6 +199,8 @@ export default function Dashboard() {
     statusFilter,
     showProtectedOnly,
     branches,
+    sortField,
+    sortDirection,
   ]);
 
   const getStatusIcon = (status: string) => {
@@ -391,9 +433,83 @@ export default function Dashboard() {
         <div className="mt-6">
           <div className="bg-white rounded-lg shadow overflow-hidden">
             <div className="px-6 py-4 border-b">
-              <h2 className="text-lg font-semibold">
-                Branches ({filteredBranches.length})
-              </h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">
+                  Branches ({filteredBranches.length})
+                </h2>
+
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-500 mr-2">Sort by:</span>
+
+                  <button
+                    onClick={() => handleSort('name')}
+                    className={`flex items-center px-3 py-1.5 text-sm rounded-lg transition ${
+                      sortField === 'name'
+                        ? 'bg-blue-100 text-blue-700'
+                        : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                  >
+                    Name
+                    {sortField === 'name' && (
+                      sortDirection === 'asc' ?
+                        <ArrowUp className="h-3 w-3 ml-1" /> :
+                        <ArrowDown className="h-3 w-3 ml-1" />
+                    )}
+                    {sortField !== 'name' && <ArrowUpDown className="h-3 w-3 ml-1 opacity-40" />}
+                  </button>
+
+                  <button
+                    onClick={() => handleSort('author')}
+                    className={`flex items-center px-3 py-1.5 text-sm rounded-lg transition ${
+                      sortField === 'author'
+                        ? 'bg-blue-100 text-blue-700'
+                        : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                  >
+                    Author
+                    {sortField === 'author' && (
+                      sortDirection === 'asc' ?
+                        <ArrowUp className="h-3 w-3 ml-1" /> :
+                        <ArrowDown className="h-3 w-3 ml-1" />
+                    )}
+                    {sortField !== 'author' && <ArrowUpDown className="h-3 w-3 ml-1 opacity-40" />}
+                  </button>
+
+                  <button
+                    onClick={() => handleSort('lastCommit')}
+                    className={`flex items-center px-3 py-1.5 text-sm rounded-lg transition ${
+                      sortField === 'lastCommit'
+                        ? 'bg-blue-100 text-blue-700'
+                        : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                  >
+                    Date
+                    {sortField === 'lastCommit' && (
+                      sortDirection === 'asc' ?
+                        <ArrowUp className="h-3 w-3 ml-1" /> :
+                        <ArrowDown className="h-3 w-3 ml-1" />
+                    )}
+                    {sortField !== 'lastCommit' && <ArrowUpDown className="h-3 w-3 ml-1 opacity-40" />}
+                  </button>
+
+                  <button
+                    onClick={() => handleSort('status')}
+                    className={`flex items-center px-3 py-1.5 text-sm rounded-lg transition ${
+                      sortField === 'status'
+                        ? 'bg-blue-100 text-blue-700'
+                        : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                  >
+                    Status
+                    {sortField === 'status' && (
+                      sortDirection === 'asc' ?
+                        <ArrowUp className="h-3 w-3 ml-1" /> :
+                        <ArrowDown className="h-3 w-3 ml-1" />
+                    )}
+                    {sortField !== 'status' && <ArrowUpDown className="h-3 w-3 ml-1 opacity-40" />}
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div className="divide-y divide-gray-200">
