@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { format, isAfter, isBefore, parseISO } from 'date-fns';
 import branchesData from '@/data/branches.json';
 import {
@@ -18,6 +18,9 @@ import {
   ArrowDown,
   Filter,
   RefreshCw,
+  X,
+  ChevronDown,
+  FilterX,
 } from 'lucide-react';
 
 interface Branch {
@@ -34,6 +37,12 @@ interface Branch {
   behind: number;
 }
 
+interface Notification {
+  id: string;
+  message: string;
+  type: 'success' | 'info' | 'warning' | 'error';
+}
+
 export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [authorFilter, setAuthorFilter] = useState('');
@@ -41,13 +50,72 @@ export default function Dashboard() {
   const [dateTo, setDateTo] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showProtectedOnly, setShowProtectedOnly] = useState(false);
+  const [branches, setBranches] = useState<Branch[]>(branchesData.branches || []);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [authorSearchTerm, setAuthorSearchTerm] = useState('');
+  const [isAuthorDropdownOpen, setIsAuthorDropdownOpen] = useState(false);
 
-  const branches: Branch[] = branchesData.branches || [];
+  const addNotification = (message: string, type: Notification['type'] = 'info') => {
+    const id = Date.now().toString();
+    setNotifications(prev => [...prev, { id, message, type }]);
+
+    setTimeout(() => {
+      setNotifications(prev => prev.filter(n => n.id !== id));
+    }, 4000);
+  };
+
+  const removeNotification = (id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  };
+
+  const handleAuthorSelect = (author: string) => {
+    setAuthorFilter(author);
+    setIsAuthorDropdownOpen(false);
+    setAuthorSearchTerm('');
+  };
+
+  const clearAuthorFilter = () => {
+    setAuthorFilter('');
+    setIsAuthorDropdownOpen(false);
+    setAuthorSearchTerm('');
+  };
+
+  const clearAllFilters = () => {
+    setSearchTerm('');
+    setAuthorFilter('');
+    setDateFrom('');
+    setDateTo('');
+    setStatusFilter('all');
+    setShowProtectedOnly(false);
+    setIsAuthorDropdownOpen(false);
+    setAuthorSearchTerm('');
+  };
+
+  // Close author dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (isAuthorDropdownOpen && !target.closest('.author-dropdown')) {
+        setIsAuthorDropdownOpen(false);
+        setAuthorSearchTerm('');
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [isAuthorDropdownOpen]);
 
   // Get unique authors for filter dropdown
   const uniqueAuthors = useMemo(() => {
     return Array.from(new Set(branches.map((b) => b.author)));
   }, [branches]);
+
+  // Filter authors based on search term
+  const filteredAuthors = useMemo(() => {
+    return uniqueAuthors.filter(author =>
+      author.toLowerCase().includes(authorSearchTerm.toLowerCase())
+    );
+  }, [uniqueAuthors, authorSearchTerm]);
 
   // Filter branches based on all criteria
   const filteredBranches = useMemo(() => {
@@ -120,8 +188,21 @@ export default function Dashboard() {
   };
 
   const handleRefresh = () => {
-    // In a real app, this would fetch new data
-    window.location.reload();
+    const paymentGatewayBranch = branches.find(b => b.name === 'feature/payment-gateway');
+    const newStatus = paymentGatewayBranch?.status === 'building' ? 'success' : 'building';
+
+    setBranches(prevBranches =>
+      prevBranches.map(branch =>
+        branch.name === 'feature/payment-gateway'
+          ? {
+              ...branch,
+              status: newStatus as 'success' | 'failed' | 'building'
+            }
+          : branch
+      )
+    );
+
+    addNotification('Branch data refreshed successfully', 'success');
   };
 
   return (
@@ -150,9 +231,18 @@ export default function Dashboard() {
       {/* Filters */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center mb-4">
-            <Filter className="h-5 w-5 text-gray-500 mr-2" />
-            <h2 className="text-lg font-semibold">Filters</h2>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center">
+              <Filter className="h-5 w-5 text-gray-500 mr-2" />
+              <h2 className="text-lg font-semibold">Filters</h2>
+            </div>
+            <button
+              onClick={clearAllFilters}
+              className="flex items-center px-3 py-1.5 text-sm text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition"
+            >
+              <FilterX className="h-4 w-4 mr-1" />
+              Clear All
+            </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
@@ -169,20 +259,57 @@ export default function Dashboard() {
             </div>
 
             {/* Author Filter */}
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <select
-                value={authorFilter}
-                onChange={(e) => setAuthorFilter(e.target.value)}
-                className="pl-10 pr-3 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 appearance-none"
-              >
-                <option value="">All Authors</option>
-                {uniqueAuthors.map((author) => (
-                  <option key={author} value={author}>
-                    {author}
-                  </option>
-                ))}
-              </select>
+            <div className="relative author-dropdown">
+              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
+              <div className="relative">
+                <button
+                  onClick={() => setIsAuthorDropdownOpen(!isAuthorDropdownOpen)}
+                  className="pl-10 pr-8 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-left bg-white flex items-center justify-between"
+                >
+                  <span className={authorFilter ? 'text-gray-900' : 'text-gray-500'}>
+                    {authorFilter || 'All Authors'}
+                  </span>
+                  <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform ${isAuthorDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isAuthorDropdownOpen && (
+                  <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
+                    <div className="p-2">
+                      <input
+                        type="text"
+                        placeholder="Search authors..."
+                        value={authorSearchTerm}
+                        onChange={(e) => setAuthorSearchTerm(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div className="max-h-48 overflow-y-auto">
+                      <button
+                        onClick={clearAuthorFilter}
+                        className="w-full px-3 py-2 text-left hover:bg-gray-100 text-gray-700"
+                      >
+                        All Authors
+                      </button>
+                      {filteredAuthors.map((author) => (
+                        <button
+                          key={author}
+                          onClick={() => handleAuthorSelect(author)}
+                          className={`w-full px-3 py-2 text-left hover:bg-gray-100 ${
+                            authorFilter === author ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
+                          }`}
+                        >
+                          {author}
+                        </button>
+                      ))}
+                      {filteredAuthors.length === 0 && authorSearchTerm && (
+                        <div className="px-3 py-2 text-gray-500 text-sm">
+                          No authors found
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Date From */}
@@ -334,15 +461,26 @@ export default function Dashboard() {
 
                     <div className="flex items-center ml-4">
                       {getStatusIcon(branch.status)}
-                      <a
-                        href={branch.buildUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="ml-4 flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                      >
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        View Build
-                      </a>
+                      {branch.status === 'success' ? (
+                        <a
+                          href={branch.buildUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ml-4 flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          View Build
+                        </a>
+                      ) : (
+                        <button
+                          disabled
+                          className="ml-4 flex items-center px-4 py-2 bg-gray-400 text-gray-600 rounded-lg cursor-not-allowed"
+                          title={`Build is ${branch.status}`}
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          View Build
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -356,6 +494,30 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Toast Notifications */}
+      <div className="fixed top-4 right-4 z-50 space-y-2">
+        {notifications.map((notification) => (
+          <div
+            key={notification.id}
+            className={`
+              flex items-center px-4 py-3 rounded-lg shadow-lg transition-all duration-300 transform translate-x-0
+              ${notification.type === 'success' ? 'bg-green-500 text-white' : ''}
+              ${notification.type === 'info' ? 'bg-blue-500 text-white' : ''}
+              ${notification.type === 'warning' ? 'bg-yellow-500 text-white' : ''}
+              ${notification.type === 'error' ? 'bg-red-500 text-white' : ''}
+            `}
+          >
+            <span className="flex-1">{notification.message}</span>
+            <button
+              onClick={() => removeNotification(notification.id)}
+              className="ml-2 hover:opacity-70"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        ))}
       </div>
     </div>
   );
