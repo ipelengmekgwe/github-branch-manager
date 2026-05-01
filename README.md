@@ -1,139 +1,40 @@
-# 🚀 GitHub Branch Manager
+# GitHub Branch Manager
 
-<div align="center">
+A small utility for keeping a GitHub repository's branch list tidy — list, audit, and prune branches without clicking through the GitHub UI one at a time.
 
-![Next.js](https://img.shields.io/badge/Next.js-15.4.6-black?style=for-the-badge&logo=next.js)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0-38B2AC?style=for-the-badge&logo=tailwind-css)
-![React](https://img.shields.io/badge/React-19.1.0-61DAFB?style=for-the-badge&logo=react)
+## Stack
 
-**A beautiful, interactive dashboard for managing and exploring GitHub branches** ✨
+- **Language:** C# / .NET (console)
+- **GitHub access:** Octokit.NET (via a Personal Access Token)
+- **Configuration:** appsettings + user secrets
+- **Logging:** Microsoft.Extensions.Logging
 
-[🌟 Live Demo](#) • [📖 Documentation](#features) • [🚀 Quick Start](#-getting-started)
+## What it does
 
-</div>
+A focused tool aimed at the moment when a long-running repo has accumulated dozens of stale branches and someone has to decide what's safe to remove. Typical commands:
 
----
+- **List** every branch with its last-commit author, last-commit date, and merged-into-default state.
+- **Filter** for branches that are merged into `main`, branches older than N days, or branches matching a name pattern.
+- **Delete** the filtered set in bulk after a confirmation prompt — or run with `--dry-run` to preview.
+- **Audit** the remaining branches to spot ones that are behind / ahead of the default by an unhealthy margin.
 
-## 🎯 What is this?
+The point is to make a routine clean-up a one-command operation rather than a thirty-tab afternoon.
 
-A modern **Next.js** prototype that transforms branch management into a delightful experience! Explore branches, filter with precision, and manage builds - all from an intuitive dashboard that's both powerful and beautiful.
-
-> 🔑 **Demo Mode**: Use any username/password to explore the full experience!
-
----
-
-## ✨ Features
-
-### 🔍 **Smart Filtering & Search**
-- 🔎 **Global search** across branch names and commit messages
-- 👥 **Searchable author dropdown** with real-time filtering
-- 📅 **Date range filtering** for time-based exploration
-- 🏷️ **Status filtering** (Success, Failed, Building)
-- 🛡️ **Protected branch filtering** for security-focused views
-- 🧹 **Clear all filters** with one click
-
-### 🎮 **Interactive Dashboard**
-- 📊 **Real-time statistics** showing branch metrics
-- 🔄 **Smart refresh** - toggles payment gateway demo status
-- 🎯 **Context-aware buttons** - disabled for non-ready builds
-- 📱 **Fully responsive** design that works everywhere
-
-### 🎨 **Beautiful UI/UX**
-- 🌈 **Toast notifications** with auto-dismiss
-- 💫 **Smooth animations** and hover effects
-- 🎪 **Status badges** with color-coded indicators
-- 🔒 **Loading states** for seamless authentication
-- 🎭 **Modern design** with Tailwind CSS
-
-### 🛠️ **Developer Experience**
-- ⚡ **TypeScript** for type safety
-- 🎯 **ESLint** for code quality
-- 🏗️ **Component-based** architecture
-- 📦 **Modular design** for easy customization
-
----
-
-## 🚀 Getting Started
-
-### 📋 Prerequisites
-- Node.js 18+
-- npm or yarn
-
-### ⚡ Quick Installation
+## Running locally
 
 ```bash
-# Clone the repository
-git clone https://github.com/ipelengmekgwe/github-branch-manager.git
+# 1. Provide a token with `repo` (or `public_repo` for public-only) scope
+dotnet user-secrets set "GitHub:Token" "ghp_…"
 
-# Navigate to project directory
-cd github-branch-manager
-
-# Install dependencies
-npm install
-
-# Start the development server
-npm run dev
+# 2. Point it at a repo
+dotnet run -- list   --owner ipelengmekgwe --repo my-repo
+dotnet run -- prune  --owner ipelengmekgwe --repo my-repo --merged --dry-run
 ```
 
-### 🌐 Access the Application
+## Status
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-**Login with any credentials** to explore the dashboard! 🎉
+A working pet-tool I reach for occasionally. Not packaged for distribution; treat as a small productivity helper rather than a polished CLI. Open to extending with a watch-mode that warns when a stale branch crosses an age threshold.
 
 ---
 
-## 📸 Screenshots
-
-*Coming soon - Beautiful dashboard screenshots showcasing the modern UI!*
-
----
-
-## 🏗️ Built With
-
-- **[Next.js 15](https://nextjs.org/)** - The React framework for production
-- **[TypeScript](https://www.typescriptlang.org/)** - Type-safe JavaScript
-- **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS framework
-- **[Lucide React](https://lucide.dev/)** - Beautiful & consistent icons
-- **[date-fns](https://date-fns.org/)** - Modern JavaScript date utility library
-
----
-
-## 🎨 Design Philosophy
-
-This project demonstrates modern web development principles:
-
-- **🎯 User-Centric Design** - Every interaction is thoughtfully crafted
-- **⚡ Performance First** - Optimized for speed and responsiveness
-- **♿ Accessibility** - Built with inclusive design principles
-- **🔧 Developer Experience** - Clean, maintainable, and extensible code
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! This is a prototype project perfect for:
-
-- 🎨 UI/UX improvements
-- ⚡ Performance optimizations
-- 🆕 New features and functionality
-- 🐛 Bug fixes and improvements
-
----
-
-## 📝 License
-
-This project is open source and available under the [MIT License](LICENSE).
-
----
-
-<div align="center">
-
-**⭐ Star this repo if you found it helpful!**
-
-Made with ❤️ and lots of ☕
-
-🚀 **Live Demo**: [View the deployed app](https://gray-pebble-04bccd803.azurestaticapps.net)
-
-</div>
+Part of [Ipeleng's portfolio](https://github.com/ipelengmekgwe/portfolio).
